@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 import datetime
 from pathlib import Path
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,11 +43,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-    'mongo_auth',
+    #'mongo_auth',
     'authentication',
     'project',
     'task',
-
+    'dayoff',
+    'remotework',
+    'meetingroom',
+    'rooms',
+    'equipment',
 ]
 
 
@@ -87,19 +93,15 @@ WSGI_APPLICATION = 'timesheet.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'ZUM_PORTAL_DB',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'Zumportal',
+        'USER': 'root',
+        'PASSWORD': '',
         'HOST': '127.0.0.1',
-        'PORT': 27017,
-        'CLIENT': {
-                'host': '127.0.0.1',
-                'port': 27017,
-                'password': 'password',
-                'authSource': 'authentication',
-
-            },
-            }
-}  
+        'PORT': '3306',
+        'OPTIONS': {'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"},
+    }
+}
 
 MANGO_JWT_SETTINGS = {
     "db_host": "127.0.0.1",
@@ -168,15 +170,19 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-DEFAULT_FROM_EMAIL = "tt567258@gmail.com"
-SERVER_EMAIL = "tt567258@gmail.com"
+DEFAULT_FROM_EMAIL = "zumportal653@gmail.com"
+SERVER_EMAIL = "zumportal653@gmail.com"
 EMAIL_USE_TLS=True
 EMAIL_HOST="smtp.gmail.com"
 EMAIL_PORT=587
-EMAIL_HOST_USER = "tt567258@gmail.com"
-EMAIL_HOST_PASSWORD = "wnllqegaemkhwpul"
+EMAIL_HOST_USER = "zumportal653@gmail.com"
+EMAIL_HOST_PASSWORD = "xgosgzxobngiijfa"
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
     "http://127.0.0.1:4200",
 ]
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

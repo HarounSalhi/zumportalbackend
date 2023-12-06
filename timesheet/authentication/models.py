@@ -17,7 +17,9 @@ class UserManager(BaseUserManager):
             raise TypeError('Users should have a email')
        user =self.model(role=role,email=self.normalize_email(email)) 
     #    user =self.model(firstname=firstname,lastname=lastname,email=self.normalize_email(email)) 
-       user.set_password(password)  
+       user.set_password(password)
+       user.set_role(role)  
+  
        user.save() 
        return user  
 
@@ -29,18 +31,27 @@ class UserManager(BaseUserManager):
        return user 
 
 class User(AbstractBaseUser,PermissionsMixin): 
-    MANAGER ='MG' 
+    MANAGER ='MG'
+    TALENT_MANAGEMENT ='TM' 
     SIMPLE_USER='SU' 
     ADMIN='AD' 
+    SCRUM_MASTER='SM'
     ROLES_CHOICES=[ 
         (MANAGER,'manager'), 
         (SIMPLE_USER,'simple_user'), 
         (ADMIN,'admin'), 
+        (TALENT_MANAGEMENT,'talent_management'),
+        (SCRUM_MASTER,'SCRUM_MASTER'),
     ] 
     firstname=models.CharField(max_length=255,null=True)  
     lastname=models.CharField(max_length=255,null=True)  
     role=models.CharField(max_length=2,choices=ROLES_CHOICES,default=SIMPLE_USER) 
     email=models.EmailField(max_length=255,unique=True)
+    ttamount=models.IntegerField(null=False,blank=False,default=0)
+    dayoffamount=models.IntegerField(null=False,blank=False,default=0)
+    tel=models.CharField(max_length=255,null=True,default='')
+    position=models.CharField(max_length=255,null=True,default='')
+    profile_photo = models.ImageField(upload_to='profile_photos/',default='profile_photos/')
     USERNAME_FIELD ='email'  
     REQUIRED_FIELDS =['role',] 
     objects = UserManager() 

@@ -22,6 +22,11 @@ urlpatterns = [
     path('auth/', include('authentication.urls')),
     path('project/', include('project.urls')),
     path('task/', include('task.urls')),
+    path('dayoff/', include('dayoff.urls')),
+    path('equipment/', include('equipment.urls')),
+    path('meetingroom/', include('meetingroom.urls')),
+    path('rm/', include('rooms.urls')),
+    path('remotework/', include('remotework.urls')),
   # path('mongo_auth/', include('mongo_auth.urls')),
     path('api_auth/', include('rest_framework.urls')),
 

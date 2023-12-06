@@ -2,9 +2,10 @@ from django.shortcuts import render
 from rest_framework.generics import GenericAPIView,UpdateAPIView,ListAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework import response,status ,permissions
 from rest_framework import generics,status,views
-from .serializers import  LoginSerializer,LogoutSerializer, UserAssginedToProjectSerializer,userSerializer,RegisterUserSerializer,Registerserilaizer
+from .serializers import  LoginSerializer,LogoutSerializer, ResetPasswordSerializer, UpdateUserSerilaizer, UserAssginedToProjectSerializer, UserProfileSerializer,userSerializer,RegisterUserSerializer,Registerserilaizer
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.tokens import default_token_generator
 from rest_framework import permissions
 from .models import User
 from django.core.mail import EmailMultiAlternatives
@@ -15,13 +16,13 @@ from django.urls import reverse
 
 
 class updateDestroyUserApiView(RetrieveUpdateDestroyAPIView):
-    # authentication_classes = []
+    authentication_classes = []
     queryset=User.objects.all()
-    serializer_class = userSerializer
+    serializer_class = UpdateUserSerilaizer
     lookup_field="id"
     def get_queryset(self):
         return self.queryset
-
+    
 class GetAllUser(ListAPIView):
     authentication_classes = []
     serializer_class = userSerializer
@@ -94,3 +95,60 @@ class LogoutAPIView(generics.GenericAPIView):
 
 
  
+
+class UserProfilePhotoUploadView(generics.UpdateAPIView):
+    authentication_classes = []
+    queryset = User.objects.all()
+    serializer_class = UserProfileSerializer
+    lookup_field = "id"
+    def get_queryset(self):
+        return self.queryset
+
+
+
+class ResetPasswordViaEmailView(GenericAPIView):
+    authentication_classes = []
+    serializer_class = ResetPasswordSerializer
+
+    def post(self, request):
+        # Validate user input
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data.get('email')
+
+        # Find the user with the provided email
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'detail': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Generate a password reset token
+        token = default_token_generator.make_token(user)
+        random_password = User.objects.make_random_password()
+
+        user.set_password(random_password)
+        user.save()
+
+        # Create a password reset link
+        # current_site = get_current_site(request)
+        # reset_url = reverse('password_reset_confirm', args=[user.id, token])
+        # absurl = 'http://' + current_site.domain + reset_url
+        absurl = 'http://localhost:4200/account/auth/login/'
+
+        # Compose the email
+        email_body = f"Hello,\n You have requested to reset your password for your zum portal account.Your new password is: {random_password}\n Click on this link to log in: {absurl}\n Best regards."
+        data = {
+            'email_body': email_body,
+            'email_to': email,
+            'email_subject': 'Password Reset Request',
+        }
+
+        # Send the email
+        email = EmailMultiAlternatives(
+            subject=data['email_subject'],
+            body=data['email_body'],
+            to=[data['email_to']],
+        )
+        email.send()
+
+        return Response({'detail': 'Password reset email sent successfully.'}, status=status.HTTP_200_OK)

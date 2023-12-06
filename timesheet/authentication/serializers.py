@@ -39,7 +39,11 @@ class LoginSerializer(serializers.ModelSerializer):
     firstname=serializers.CharField(max_length=68,min_length=6,read_only=True)
     lastname=serializers.CharField(max_length=68,min_length=6,read_only=True)
     tokens=serializers.SerializerMethodField()
-
+    
+    
+    # user_profile = User.objects.get(user=request.user)
+    # context = {'user_profile': user_profile}
+    
     def get_tokens(self,obj):
         # 1/ get the real user from obj
         user =User.objects.get(email=obj['email'])
@@ -51,7 +55,7 @@ class LoginSerializer(serializers.ModelSerializer):
         }
     class Meta: 
         model =User 
-        fields=['id','firstname','lastname','email','role','password','tokens','token',]
+        fields=['id','firstname','lastname','email','role','password','ttamount','dayoffamount','tokens','token',]
         read_only_fields =['token']
     
     def validate(self,attrs):
@@ -71,8 +75,12 @@ class LoginSerializer(serializers.ModelSerializer):
             'id':user.id,
             'role':user.role,
             'email': user.email,
+            'tel':user.tel,
+            'position':user.position,
             'lastname': user.lastname,
             'firstname': user.firstname,
+            'ttamount':user.ttamount,
+            'dayoffamount':user.dayoffamount,
             'tokens': user.tokens(),
             'token' :user.token
         }
@@ -95,3 +103,30 @@ class LogoutSerializer(serializers.Serializer):
          RefreshToken(self.token).blacklist()
         except TokenError :
             self.fail('bad_token')
+
+class UpdateUserSerilaizer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields=['id','firstname','lastname','email','role']
+        def update(self, instance, validated_data):
+            instance.firstname = validated_data.pop('firstname', instance.firstname)
+            instance.lastname = validated_data.pop('lastname', instance.lastname)
+            instance.email = validated_data.pop('email', instance.email)
+            instance.role = validated_data.pop('role', instance.role)
+
+            instance.save()
+            return instance
+        
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=255, min_length=3)
+
+    def validate_email(self, value):
+        # Check if the provided email exists in your database
+        # You can add custom logic here to validate the email
+        # and ensure it belongs to an existing user.
+        return value
+    
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['profile_photo']
